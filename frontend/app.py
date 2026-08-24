@@ -12,7 +12,7 @@ import requests
 import streamlit as st
 import pandas as pd
 
-API_BASE_URL = "https://YOUR-BACKEND-URL.onrender.com"  # replace after deploying the backend
+API_BASE_URL = https://modelforge-lite-backend.onrender.com/summary
 
 st.set_page_config(page_title="ModelForge Lite", layout="wide")
 
