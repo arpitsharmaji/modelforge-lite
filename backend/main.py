@@ -13,7 +13,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from huggingface_hub import hf_hub_download
 
-HF_USERNAME = "ArpitSharmaa"  # replace with your Hugging Face username
+HF_USERNAME = "YOUR_HF_USERNAME"  # replace with your Hugging Face username
 DATASET_REPO = f"{HF_USERNAME}/modelforge-lite-support-data"
 
 app = FastAPI(title="ModelForge Lite API")
@@ -53,7 +53,7 @@ def root():
 def list_questions():
     """Return all eval questions with their row index, for the frontend dropdown."""
     return [
-        {"id": i, "question": row["question"], "intent": row.get("intent", "")}
+        {"id": int(i), "question": str(row["question"]), "intent": str(row.get("intent", ""))}
         for i, row in _scored_df.iterrows()
     ]
 
@@ -66,34 +66,22 @@ def compare(question_id: int):
 
     row = _scored_df.iloc[question_id]
 
+    def variant_data(prefix):
+        return {
+            "answer": str(row[f"{prefix}_answer"]),
+            "relevance": int(row[f"{prefix}_relevance"]),
+            "faithfulness": int(row[f"{prefix}_faithfulness"]),
+            "latency_sec": float(row[f"{prefix}_latency_sec"]),
+        }
+
     return {
-        "question": row["question"],
-        "intent": row.get("intent", ""),
+        "question": str(row["question"]),
+        "intent": str(row.get("intent", "")),
         "variants": {
-            "base_model": {
-                "answer": row["base_model_answer"],
-                "relevance": row["base_model_relevance"],
-                "faithfulness": row["base_model_faithfulness"],
-                "latency_sec": row["base_model_latency_sec"],
-            },
-            "rag": {
-                "answer": row["rag_answer"],
-                "relevance": row["rag_relevance"],
-                "faithfulness": row["rag_faithfulness"],
-                "latency_sec": row["rag_latency_sec"],
-            },
-            "finetuned": {
-                "answer": row["finetuned_answer"],
-                "relevance": row["finetuned_relevance"],
-                "faithfulness": row["finetuned_faithfulness"],
-                "latency_sec": row["finetuned_latency_sec"],
-            },
-            "finetuned_rag": {
-                "answer": row["finetuned_rag_answer"],
-                "relevance": row["finetuned_rag_relevance"],
-                "faithfulness": row["finetuned_rag_faithfulness"],
-                "latency_sec": row["finetuned_rag_latency_sec"],
-            },
+            "base_model": variant_data("base_model"),
+            "rag": variant_data("rag"),
+            "finetuned": variant_data("finetuned"),
+            "finetuned_rag": variant_data("finetuned_rag"),
         },
     }
 
